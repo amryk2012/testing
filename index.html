@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive Audio Player</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+
+    <?php
+    // Set your Google Drive API key
+    $apiKey = 'AIzaSyAqBHGp_4d72Vv_Ot5whJjh2dCAIQVslEU';
+
+    // Set the folder ID of your Google Drive folder
+    $folderId = '19-8eBVjmBKuRLQLH58rlTaeIIP5gzgOiD';
+
+    // Get the list of files in the folder using Google Drive API
+    $apiUrl = "https://www.googleapis.com/drive/v3/files?q='%s'+in+parents&key=%s";
+    $apiUrl = sprintf($apiUrl, $folderId, $apiKey);
+    $response = file_get_contents($apiUrl);
+    $data = json_decode($response, true);
+
+    // Check if the response contains files
+    if (isset($data['files']) && !empty($data['files'])) {
+    // Create an HTML list to display audio files
+    echo "<ul id='audioList'>
+        ";
+
+        // Loop through each file and create list items with audio elements
+        foreach ($data['files'] as $file) {
+        $audioUrl = "https://www.googleapis.com/drive/v3/files/" . $file['id'] . "?key=" . $apiKey . "&alt=media";
+        echo "
+        <li><a href='#' class='playAudio' data-src='$audioUrl'>" . $file['name'] . "</a></li>";
+        }
+
+        echo "
+    </ul>";
+    } else {
+    echo "No audio files found in the folder.";
+    }
+    ?>
+
+    <script>
+        $(document).ready(function () {
+            // Add click event to play audio
+            $('.playAudio').click(function (e) {
+                e.preventDefault();
+                var audioSrc = $(this).data('src');
+                // Create or update the audio element to play the selected audio
+                var audioPlayer = $('#audioPlayer');
+                if (audioPlayer.length === 0) {
+                    $('body').append("<audio id='audioPlayer' controls></audio>");
+                    audioPlayer = $('#audioPlayer');
+                }
+                audioPlayer.attr('src', audioSrc);
+                audioPlayer[0].play();
+            });
+        });
+    </script>
+
+</body>
+</html>
